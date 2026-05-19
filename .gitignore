@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Expo / React Native
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+
+# AI tools
+.claude/
+
+# Local env files
+.env*.local
