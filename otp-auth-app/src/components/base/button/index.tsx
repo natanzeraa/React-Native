@@ -1,24 +1,24 @@
 // @ts-check
-import React, { memo, useEffect } from "react";
+import { LinearGradient } from 'expo-linear-gradient'
+import React, { memo, useEffect } from 'react'
 import {
+  ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
-  Platform,
   View,
   type ViewStyle,
-  ActivityIndicator,
-} from "react-native";
+} from 'react-native'
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  interpolate,
   Easing,
+  interpolate,
   interpolateColor,
-} from "react-native-reanimated";
-import { LinearGradient } from "expo-linear-gradient";
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
 // @ts-check
-import type { IButton } from "./types";
+import type { IButton } from './types'
 
 export const Button: React.FC<IButton> & React.FunctionComponent<IButton> =
   memo<IButton>(
@@ -28,9 +28,9 @@ export const Button: React.FC<IButton> & React.FunctionComponent<IButton> =
       onPress,
       width = 200,
       height = 48,
-      backgroundColor = "#fff",
-      loadingText = "Loading...",
-      loadingTextColor = "white",
+      backgroundColor = '#fff',
+      loadingText = 'Loading...',
+      loadingTextColor = 'white',
       loadingTextSize = 16,
       borderRadius,
       gradientColors,
@@ -41,77 +41,77 @@ export const Button: React.FC<IButton> & React.FunctionComponent<IButton> =
       disabled = false,
       showLoadingIndicator = false,
       renderLoadingIndicator,
-      loadingTextBackgroundColor = "#cacaca",
+      loadingTextBackgroundColor = '#cacaca',
     }: IButton): React.ReactNode & React.JSX.Element & React.ReactElement => {
-      const animationProgress = useSharedValue<number>(isLoading ? 1 : 0);
-      const scaleValue = useSharedValue<number>(1);
+      const animationProgress = useSharedValue<number>(isLoading ? 1 : 0)
+      const scaleValue = useSharedValue<number>(1)
 
       useEffect(() => {
         animationProgress.value = withTiming<number>(isLoading ? 1 : 0, {
           duration: animationDuration,
           easing: Easing.bezier(0.4, 0, 0.2, 1),
-        });
-      }, [isLoading, animationDuration]);
+        })
+      }, [isLoading, animationDuration])
 
-      const calculatedBorderRadius = borderRadius ?? height / 2;
+      const calculatedBorderRadius = borderRadius ?? height / 2
 
       const contentAnimatedStylez = useAnimatedStyle<
-        Pick<ViewStyle, "transform" | "opacity">
+        Pick<ViewStyle, 'transform' | 'opacity'>
       >(() => {
         const translateY = interpolate(
           animationProgress.value,
           [0, 1],
           [0, -20],
-        );
-        const opacity = interpolate(animationProgress.value, [0, 0.5], [1, 0]);
+        )
+        const opacity = interpolate(animationProgress.value, [0, 0.5], [1, 0])
 
         return {
           transform: [{ translateY }],
           opacity,
-        };
-      });
+        }
+      })
 
       const loadingAnimatedStylez = useAnimatedStyle<
-        Pick<ViewStyle, "transform" | "opacity">
+        Pick<ViewStyle, 'transform' | 'opacity'>
       >(() => {
         const translateY = interpolate(
           animationProgress.value,
           [0, 1],
           [20, 0],
-        );
-        const opacity = interpolate(animationProgress.value, [0.5, 1], [0, 1]);
+        )
+        const opacity = interpolate(animationProgress.value, [0.5, 1], [0, 1])
 
         return {
           transform: [{ translateY }],
           opacity,
-        };
-      });
+        }
+      })
 
       const pressAnimatedStylez = useAnimatedStyle<
-        Pick<ViewStyle, "transform" | "backgroundColor">
+        Pick<ViewStyle, 'transform' | 'backgroundColor'>
       >(() => {
         const bgColor = interpolateColor(
           animationProgress.value,
           [0, 1],
           [backgroundColor, loadingTextBackgroundColor!],
-        );
+        )
         return {
           transform: [{ scale: scaleValue.value }],
           backgroundColor: bgColor,
-        };
-      });
+        }
+      })
 
       const handlePressIn = () => {
         if (withPressAnimation && !disabled && !isLoading) {
-          scaleValue.value = withTiming(0.95, { duration: 100 });
+          scaleValue.value = withTiming(0.95, { duration: 100 })
         }
-      };
+      }
 
       const handlePressOut = () => {
         if (withPressAnimation && !disabled && !isLoading) {
-          scaleValue.value = withTiming(1, { duration: 200 });
+          scaleValue.value = withTiming(1, { duration: 200 })
         }
-      };
+      }
 
       const renderInnerContent = () => (
         <View style={styles.contentWrapper}>
@@ -129,7 +129,7 @@ export const Button: React.FC<IButton> & React.FunctionComponent<IButton> =
                 renderLoadingIndicator()
               ) : (
                 <Animated.View style={{ marginRight: loadingText ? 8 : 0 }}>
-                  <ActivityIndicator color={"#000"} size={"small"} />
+                  <ActivityIndicator color={'#000'} size={'small'} />
                 </Animated.View>
               ))}
             <Animated.Text
@@ -146,7 +146,7 @@ export const Button: React.FC<IButton> & React.FunctionComponent<IButton> =
             </Animated.Text>
           </Animated.View>
         </View>
-      );
+      )
 
       const buttonContent = gradientColors ? (
         <Animated.View style={[pressAnimatedStylez]}>
@@ -183,7 +183,7 @@ export const Button: React.FC<IButton> & React.FunctionComponent<IButton> =
         >
           {renderInnerContent()}
         </Animated.View>
-      );
+      )
 
       return (
         <Pressable
@@ -193,7 +193,7 @@ export const Button: React.FC<IButton> & React.FunctionComponent<IButton> =
           onPressOut={handlePressOut}
           style={({ pressed }) => [
             styles.pressable,
-            Platform.OS === "ios" && pressed && styles.pressed,
+            Platform.OS === 'ios' && pressed && styles.pressed,
           ]}
           accessible={true}
           accessibilityRole="button"
@@ -201,46 +201,46 @@ export const Button: React.FC<IButton> & React.FunctionComponent<IButton> =
         >
           {buttonContent}
         </Pressable>
-      );
+      )
     },
-  );
+  )
 
 const styles = StyleSheet.create({
   pressable: {
-    alignSelf: "flex-start",
+    alignSelf: 'center',
   },
   pressed: {
     opacity: 0.9,
   },
   button: {
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
   contentWrapper: {
-    position: "relative",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
-    height: "100%",
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
   },
   contentContainer: {
-    position: "absolute",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    position: 'absolute',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loadingContainer: {
-    position: "absolute",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    position: 'absolute',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loadingText: {
-    fontWeight: "600",
+    fontWeight: '600',
   },
-});
+})
 
 export default memo<React.FC<IButton> & React.FunctionComponent<IButton>>(
   Button,
-);
+)
