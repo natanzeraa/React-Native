@@ -21,7 +21,7 @@ export default function ProtectedLayout() {
         <Stack>
             <Stack.Screen
                 name="index"
-                options={{ title: 'Home' }}
+                options={{ title: 'Home', headerShown: false }}
             />
         </Stack>
     )
