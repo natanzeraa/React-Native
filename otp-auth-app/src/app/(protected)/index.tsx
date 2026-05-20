@@ -2,6 +2,7 @@ import Avatar from '@/components/base/avatar'
 import { Button } from '@/components/base/button'
 import { Title } from '@/components/base/title'
 import useAuth from '@/hooks/useAuth'
+import { appointmentsService } from '@/service/appointmentsService'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native'
 
@@ -21,45 +22,6 @@ export interface AppointmentResponse {
     data: Appointment[]
 }
 
-const mockAppointments: Appointment[] = [
-    {
-        id: '1',
-        client_name: 'Ana Silva',
-        service: 'Esmaltação simples',
-        date: '2025-09-01',
-        time: '09:00',
-        status: 'confirmed',
-        price: 50
-    },
-    {
-        id: '2',
-        client_name: 'Cristiane Oliveira',
-        service: 'Alongamento em gel',
-        date: '2025-09-01',
-        time: '10:30',
-        status: 'confirmed',
-        price: 120
-    },
-    {
-        id: '3',
-        client_name: 'Fernanda Souza',
-        service: 'Banho de gel',
-        date: '2025-09-01',
-        time: '13:00',
-        status: 'pending',
-        price: 90
-    },
-    {
-        id: '4',
-        client_name: 'Juliana Costa',
-        service: 'Spa das mãos + Nail art',
-        date: '2025-09-01',
-        time: '15:00',
-        status: 'cancelled',
-        price: 150
-    }
-]
-
 export default function Index() {
     const { logout } = useAuth()
     const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -69,8 +31,8 @@ export default function Index() {
         try {
             console.log('Buscando dados')
             setLoading(true)
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            setAppointments(mockAppointments)
+            const response = await appointmentsService.findAll()
+            setAppointments(response)
         } catch (error) {
             console.log(error)
         } finally {
