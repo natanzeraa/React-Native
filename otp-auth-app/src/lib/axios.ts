@@ -5,7 +5,7 @@ import { router } from 'expo-router'
 const AUTH_STORAGE_KEY = '@otp-auth-app:auth-state'
 
 export const api = axios.create({
-  baseURL: 'http://localhost:3001/api/v1'
+  baseURL: 'http://192.168.100.105:3001/api/v1'
 })
 
 api.interceptors.request.use(
