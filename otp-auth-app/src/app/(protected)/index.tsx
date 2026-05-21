@@ -1,10 +1,11 @@
 import Avatar from '@/components/base/avatar'
-import { Button } from '@/components/base/button'
 import { Title } from '@/components/base/title'
+import { BottomSheetMethods } from '@/components/templates/bottom-sheet/types'
 import useAuth from '@/hooks/useAuth'
 import { appointmentsService } from '@/service/appointmentsService'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native'
+import UserPreferences from './userPreferences'
 
 export interface Appointment {
     id: string
@@ -24,8 +25,11 @@ export interface AppointmentResponse {
 
 export default function Index() {
     const { logout } = useAuth()
+    const sheetRef = useRef<BottomSheetMethods>(null)
     const [appointments, setAppointments] = useState<Appointment[]>([])
+    const [twoFaEnabled, setTwoFaEnabled] = useState(false)
     const [loading, setLoading] = useState(false)
+    const { user } = useAuth()
 
     async function loadAppointments() {
         try {
@@ -54,18 +58,23 @@ export default function Index() {
                         image={{
                             uri: 'https://avatars.githubusercontent.com/u/172435339?s=400&u=1b0a021f2f57b0b857235a8dd0577ff63de34158&v=4'
                         }}
+                        onPress={() => {
+                            sheetRef.current?.snapToIndex(0)
+                            console.log('Exibindo preferências do usuário')
+                        }
+                        }
                     />
-                    <Title style={styles.title}>
-                        <Text>Natan</Text>
-                    </Title>
+                    <View style={styles.userDataContainer} >
+                        <Title style={styles.title}>
+                            <Text>{user?.name}</Text>
+                        </Title>
+                        <Text>{user?.email}</Text>
+                    </View>
                 </View>
-                <Button onPress={logout} loadingText='Carregando' backgroundColor='#7300ff' width={50} borderRadius={8}>
-                    <Text style={styles.buttonText}>Sair</Text>
-                </Button>
             </View>
 
             <View style={styles.appointmentsContainer}>
-                <Title style={styles.title}>
+                <Title style={styles.appointmentsTitle}>
                     <Text>Meus Agendamentos</Text>
                 </Title>
 
@@ -123,6 +132,33 @@ export default function Index() {
                     />
                 )}
             </View>
+            <UserPreferences
+                ref={sheetRef}
+                name={user?.name || ''}
+                email={user?.email || ''}
+                actions={[
+                    {
+                        icon: 'log-out',
+                        label: 'Logout',
+                        color: '#ff453a',
+                        onPress: logout
+                    }
+                ]}
+                sections={[
+                    {
+                        title: 'Security',
+                        items: [
+                            {
+                                icon: 'shield',
+                                label: 'Enable TOTP',
+                                type: 'switch',
+                                value: twoFaEnabled,
+                                onToggle: setTwoFaEnabled
+                            },
+                        ]
+                    }
+                ]}
+            />
         </View>
     )
 }
@@ -146,6 +182,13 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         paddingLeft: 10
     },
+    userDataContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+        paddingLeft: 10
+    },
     buttonContainer: {
         width: 180,
     },
@@ -154,8 +197,11 @@ const styles = StyleSheet.create({
     },
     title: {
         color: '#222222',
-        marginStart: 10,
-        marginBottom: 10
+    },
+    appointmentsTitle: {
+        color: '#222222',
+        marginStart: 5,
+        marginBottom: 15
     },
     appointmentsContainer: {
         flex: 1,
@@ -207,5 +253,5 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center'
-    }
+    },
 })
