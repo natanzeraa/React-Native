@@ -29,18 +29,18 @@ export default function Index() {
     const { logout, user } = useAuth()
 
     const sheetRef = useRef<BottomSheetMethods>(null)
+    const totpSheetRef = useRef<BottomSheetMethods>(null)
 
     const [totpUri, setTotpUri] = useState('')
     const [loading, setLoading] = useState(false)
     const [totpQrCode, setTotpQrCode] = useState('')
-    const [twoFaEnabled, setTwoFaEnabled] = useState(Boolean(user?.twoFaEnabled))
+    const [twoFaEnabled, setTwoFaEnabled] = useState(false)
     const [showTotpSetup, setShowTotpSetup] = useState(false)
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
     const [appointments, setAppointments] = useState<Appointment[]>([])
 
     async function loadAppointments() {
         try {
-            setErrorMsg(null)
             setLoading(true)
             const response = await appointmentsService.findAll()
             setAppointments(response)
@@ -64,6 +64,7 @@ export default function Index() {
             }
 
             const response = await authService.enableTotp(payload)
+            console.log(response)
             const data = response.data.data
 
             if (!response.data.success) {
@@ -128,13 +129,13 @@ export default function Index() {
         )
     }
 
+    requestAnimationFrame(() => {
+        totpSheetRef.current?.snapToIndex(0)
+    })
+
     useEffect(() => {
         loadAppointments()
     }, [])
-
-    useEffect(() => {
-        setTwoFaEnabled(Boolean(user?.twoFaEnabled))
-    }, [user?.twoFaEnabled])
 
     return (
         <View style={styles.container} >
@@ -148,6 +149,7 @@ export default function Index() {
                         }}
                         onPress={() => {
                             sheetRef.current?.snapToIndex(0)
+                            console.log('Exibindo preferências do usuário')
                         }
                         }
                     />

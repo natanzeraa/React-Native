@@ -49,5 +49,5 @@ export const authService = {
     api.post<AuthResponse>('/auth/login', payload),
 
   enableTotp: (payload: EnableTOTPRequest) =>
-    api.post<EnableTOTPResponse>('/auth/2fa/enable', payload)
+    api.post<EnableTOTPResponse>('auth/2fa/enable', payload)
 }
