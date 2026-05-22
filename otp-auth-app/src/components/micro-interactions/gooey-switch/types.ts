@@ -1,75 +1,75 @@
-import type { SharedValue, WithSpringConfig } from "react-native-reanimated";
+import type { SharedValue, WithSpringConfig } from 'react-native-reanimated'
 
 interface ICoreOval {
-  cx: SharedValue<number>;
-  cy: number;
-  rx: SharedValue<number>;
-  ry: SharedValue<number>;
-  isOn: SharedValue<boolean>;
-  onColor: string;
-  offColor: string;
+  cx: SharedValue<number>
+  cy: number
+  rx: SharedValue<number>
+  ry: SharedValue<number>
+  isOn: SharedValue<boolean>
+  onColor: string
+  offColor: string
 }
 
 interface IShadowOval {
-  cx: SharedValue<number>;
-  cy: number;
-  rx: SharedValue<number>;
-  ry: SharedValue<number>;
-  color: string;
+  cx: SharedValue<number>
+  cy: number
+  rx: SharedValue<number>
+  ry: SharedValue<number>
+  color: string
 }
 
 interface IAnimatedBridge {
-  leftX: number;
-  rightX: number;
-  cy: number;
-  mainX: SharedValue<number>;
-  height: number;
-  color: string;
-  progress: SharedValue<number>;
+  leftX: number
+  rightX: number
+  cy: number
+  mainX: SharedValue<number>
+  height: number
+  color: string
+  progress: SharedValue<number>
 }
 
 interface IBlobConfig {
-  readonly stretchX?: number;
-  readonly squishY?: number;
-  readonly sideBlobScale?: number;
+  readonly stretchX?: number
+  readonly squishY?: number
+  readonly sideBlobScale?: number
 }
 interface BridgeConfig {
-  readonly show?: boolean;
-  readonly height?: number;
-  readonly offset?: number;
+  readonly show?: boolean
+  readonly height?: number
+  readonly offset?: number
 }
 interface IconRender {
-  size: number;
-  color: string;
+  size: number
+  color: string
 }
 interface IGooeySwitch {
-  readonly active?: boolean;
-  readonly onToggle?: (active: boolean) => void;
-  readonly size?: number;
-  readonly inactiveColor?: string;
-  readonly activeColor?: string;
-  readonly trackColor?: string;
-  readonly iconTint?: string;
-  readonly toggleThreshold?: number;
-  readonly isDisabled?: boolean;
-  readonly showIcons?: boolean;
-  readonly animation?: WithSpringConfig;
-  readonly deformation?: IBlobConfig;
-  readonly connector?: BridgeConfig;
-  readonly blur?: number;
-  readonly gooey?: number;
-  readonly renderActiveIcon?: (props: IconRender) => React.ReactNode;
-  readonly renderInactiveIcon?: (props: IconRender) => React.ReactNode;
-  readonly onDragBegin?: () => void;
-  readonly onDragFinish?: (active: boolean) => void;
+  readonly active?: boolean
+  readonly onToggle?: (active: boolean) => void
+  readonly size?: number
+  readonly inactiveColor?: string
+  readonly activeColor?: string
+  readonly trackColor?: string
+  readonly iconTint?: string
+  readonly toggleThreshold?: number
+  readonly isDisabled?: boolean
+  readonly showIcons?: boolean
+  readonly animation?: WithSpringConfig
+  readonly deformation?: IBlobConfig
+  readonly connector?: BridgeConfig
+  readonly blur?: number
+  readonly gooey?: number
+  readonly renderActiveIcon?: (props: IconRender) => React.ReactNode
+  readonly renderInactiveIcon?: (props: IconRender) => React.ReactNode
+  readonly onDragBegin?: () => void
+  readonly onDragFinish?: (active: boolean) => void
 }
 
 export type {
-  IGooeySwitch,
-  IBlobConfig,
   BridgeConfig,
-  IconRender,
-  IShadowOval,
   IAnimatedBridge,
+  IBlobConfig,
+  IconRender,
   ICoreOval,
-};
+  IGooeySwitch,
+  IShadowOval
+}
