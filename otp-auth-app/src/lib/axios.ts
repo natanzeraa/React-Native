@@ -18,9 +18,8 @@ type RetryRequestConfig = InternalAxiosRequestConfig & {
 }
 
 export const api = axios.create({
-  baseURL: 'http://192.168.100.105:3001/api/v1',
-  // baseURL: 'http://192.168.100.105:51013/api/v1',
-  timeout: 10000
+  baseURL: process.env.EXPO_PUBLIC_API_URL,
+  timeout: 10000 // Esse tempo curto é apenas para praticidade dos testes
 })
 
 let isRefreshing = false
@@ -114,7 +113,8 @@ api.interceptors.response.use(
       }
 
       console.log('Refresh Token: ', auth?.refreshToken)
-
+      console.log('Enviando refresh token')
+      
       const response = await api.post(
         '/auth/refresh',
         {},
@@ -124,6 +124,10 @@ api.interceptors.response.use(
           }
         }
       )
+
+      if(response.status === 200) {
+        console.log('Token renovado')
+      }
 
       const { accessToken, refreshToken } = response.data
 
