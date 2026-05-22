@@ -1,10 +1,12 @@
 import Avatar from '@/components/base/avatar'
 import { Title } from '@/components/base/title'
+import BottomSheet from '@/components/templates/bottom-sheet'
 import { BottomSheetMethods } from '@/components/templates/bottom-sheet/types'
 import useAuth from '@/hooks/useAuth'
 import { appointmentsService } from '@/service/appointmentsService'
+import { authService } from '@/service/authService'
 import { useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, FlatList, Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native'
 import UserPreferences from './userPreferences'
 
 export interface Appointment {
@@ -24,29 +26,115 @@ export interface AppointmentResponse {
 }
 
 export default function Index() {
-    const { logout } = useAuth()
+    const { logout, user } = useAuth()
+
     const sheetRef = useRef<BottomSheetMethods>(null)
-    const [appointments, setAppointments] = useState<Appointment[]>([])
-    const [twoFaEnabled, setTwoFaEnabled] = useState(false)
+
+    const [totpUri, setTotpUri] = useState('')
     const [loading, setLoading] = useState(false)
-    const { user } = useAuth()
+    const [totpQrCode, setTotpQrCode] = useState('')
+    const [twoFaEnabled, setTwoFaEnabled] = useState(Boolean(user?.twoFaEnabled))
+    const [showTotpSetup, setShowTotpSetup] = useState(false)
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
+    const [appointments, setAppointments] = useState<Appointment[]>([])
 
     async function loadAppointments() {
         try {
-            console.log('Buscando dados')
+            setErrorMsg(null)
             setLoading(true)
             const response = await appointmentsService.findAll()
             setAppointments(response)
         } catch (error) {
             console.log(error)
+
+            setErrorMsg('Não foi possível carregar os agendamentos')
+            setAppointments([])
         } finally {
             setLoading(false)
         }
     }
 
+    async function enableTotp() {
+        try {
+            setLoading(true)
+
+            const payload = {
+                name: user?.name || '',
+                email: user?.email || ''
+            }
+
+            const response = await authService.enableTotp(payload)
+            const data = response.data.data
+
+            if (!response.data.success) {
+                throw new Error(response.data.message)
+            }
+
+            setTotpQrCode(data.qrCode)
+            setTotpUri(data.uri)
+            setShowTotpSetup(true)
+
+        } catch (error) {
+            console.log(error)
+
+            Alert.alert(
+                'Erro',
+                'Não foi possível gerar o QR Code'
+            )
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function openAuthenticator() {
+        if (!totpUri) return
+
+        try {
+            const supported = await Linking.canOpenURL(totpUri)
+
+            if (supported) {
+                await Linking.openURL(totpUri)
+                return
+            }
+
+            Alert.alert(
+                'Nenhum autenticador encontrado',
+                'Instale Google Authenticator, Authy ou Microsoft Authenticator.'
+            )
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async function handleToggleTOTP(nextValue: boolean) {
+        if (!nextValue) {
+            setTwoFaEnabled(false)
+            return
+        }
+
+        Alert.alert(
+            'Ativar TOTP',
+            'Deseja configurar autenticação em 2 fatores?',
+            [
+                {
+                    text: 'Cancelar',
+                    style: 'cancel'
+                },
+                {
+                    text: 'Confirmar',
+                    onPress: enableTotp
+                }
+            ]
+        )
+    }
+
     useEffect(() => {
         loadAppointments()
     }, [])
+
+    useEffect(() => {
+        setTwoFaEnabled(Boolean(user?.twoFaEnabled))
+    }, [user?.twoFaEnabled])
 
     return (
         <View style={styles.container} >
@@ -60,7 +148,6 @@ export default function Index() {
                         }}
                         onPress={() => {
                             sheetRef.current?.snapToIndex(0)
-                            console.log('Exibindo preferências do usuário')
                         }
                         }
                     />
@@ -90,6 +177,51 @@ export default function Index() {
                         data={appointments}
                         keyExtractor={(item) => item.id}
                         showsVerticalScrollIndicator={false}
+                        refreshing={loading}
+                        onRefresh={loadAppointments}
+                        ListEmptyComponent={() => {
+                            if (loading) {
+                                return (
+                                    <View style={styles.centerContainer}>
+                                        <ActivityIndicator
+                                            size="large"
+                                            color="#7300ff"
+                                        />
+                                    </View>
+                                )
+                            }
+
+                            if (errorMsg) {
+                                return (
+                                    <View style={styles.centerContainer}>
+                                        <Text style={styles.errorTitle}>
+                                            Ops, algo deu errado
+                                        </Text>
+
+                                        <Text style={styles.errorText}>
+                                            {errorMsg}
+                                        </Text>
+
+                                        <Pressable
+                                            style={styles.retryButton}
+                                            onPress={loadAppointments}
+                                        >
+                                            <Text style={styles.retryText}>
+                                                Tentar novamente
+                                            </Text>
+                                        </Pressable>
+                                    </View>
+                                )
+                            }
+
+                            return (
+                                <View style={styles.centerContainer}>
+                                    <Text style={styles.emptyText}>
+                                        Nenhum agendamento encontrado
+                                    </Text>
+                                </View>
+                            )
+                        }}
                         renderItem={({ item }) => (
                             <View style={styles.appointmentCard}>
                                 <View>
@@ -105,7 +237,6 @@ export default function Index() {
                                         {item.date} • {item.time}
                                     </Text>
                                 </View>
-
                                 <View>
                                     <Text style={styles.priceText}>
                                         R$ {item.price.toFixed(2)}
@@ -153,12 +284,52 @@ export default function Index() {
                                 label: 'Enable TOTP',
                                 type: 'switch',
                                 value: twoFaEnabled,
-                                onToggle: setTwoFaEnabled
+                                onToggle: handleToggleTOTP
                             },
                         ]
                     }
                 ]}
             />
+
+            {showTotpSetup && (
+                <BottomSheet
+                    snapPoints={['65%']}
+                    backgroundColor="#1c1c1e"
+                    borderRadius={28}
+                >
+                    <View style={styles.qrContainer}>
+                        <Text style={styles.qrTitle}>
+                            Configure seu autenticador
+                        </Text>
+
+                        <Image
+                            source={{ uri: totpQrCode }}
+                            style={styles.qrCode}
+                        />
+
+                        <Pressable
+                            style={styles.primaryButton}
+                            onPress={openAuthenticator}
+                        >
+                            <Text style={styles.primaryText}>
+                                Abrir autenticador
+                            </Text>
+                        </Pressable>
+
+                        <Pressable
+                            style={styles.secondaryButton}
+                            onPress={() => {
+                                setTwoFaEnabled(true)
+                                setShowTotpSetup(false)
+                            }}
+                        >
+                            <Text style={styles.secondaryText}>
+                                Já configurei
+                            </Text>
+                        </Pressable>
+                    </View>
+                </BottomSheet>
+            )}
         </View>
     )
 }
@@ -254,4 +425,85 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
+
+    qrContainer: {
+        alignItems: 'center',
+        padding: 24
+    },
+
+    qrTitle: {
+        fontSize: 20,
+        color: '#fff',
+        fontWeight: '700',
+        marginBottom: 20
+    },
+
+    qrCode: {
+        width: 220,
+        height: 220,
+        marginBottom: 20
+    },
+
+    primaryButton: {
+        width: '100%',
+        backgroundColor: '#7300ff',
+        paddingVertical: 14,
+        borderRadius: 14,
+        alignItems: 'center',
+        marginBottom: 12
+    },
+
+    primaryText: {
+        color: '#fff',
+        fontWeight: '600'
+    },
+
+    secondaryButton: {
+        width: '100%',
+        backgroundColor: '#2c2c2e',
+        paddingVertical: 14,
+        borderRadius: 14,
+        alignItems: 'center'
+    },
+
+    secondaryText: {
+        color: '#fff'
+    },
+
+    centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 80
+    },
+
+    errorTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#222'
+    },
+
+    errorText: {
+        marginTop: 8,
+        color: '#666',
+        textAlign: 'center'
+    },
+
+    retryButton: {
+        marginTop: 20,
+        backgroundColor: '#7300ff',
+        paddingHorizontal: 18,
+        paddingVertical: 12,
+        borderRadius: 12
+    },
+
+    retryText: {
+        color: '#fff',
+        fontWeight: '600'
+    },
+
+    emptyText: {
+        color: '#888',
+        fontSize: 15
+    }
 })
