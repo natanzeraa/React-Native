@@ -1,4 +1,4 @@
-import { AUTH_STORAGE_KEY, AUTH_USER_DATA_KEY } from '@/contexts/authContext'
+import { AUTH_STORAGE_KEY } from '@/contexts/authContext'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { router } from 'expo-router'
@@ -53,7 +53,6 @@ async function getAuthStorage() {
 
 async function clearSession() {
   await AsyncStorage.removeItem(AUTH_STORAGE_KEY)
-  await AsyncStorage.removeItem(AUTH_USER_DATA_KEY)
   router.replace('/login')
 }
 
@@ -92,12 +91,12 @@ api.interceptors.response.use(
     }
 
     if (isRefreshing) {
-      return new Promise<string>((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         failedQueue.push({
-          resolve,
+          resolve: (token) => resolve(token),
           reject
         })
-      }).then((token: string) => {
+      }).then((token) => {
         originalRequest.headers.Authorization = `Bearer ${token}`
         return api(originalRequest)
       })
@@ -113,6 +112,8 @@ api.interceptors.response.use(
         await clearSession()
         return Promise.reject(error)
       }
+
+      console.log('Refresh Token: ', auth?.refreshToken)
 
       const response = await api.post(
         '/auth/refresh',

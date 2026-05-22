@@ -12,7 +12,7 @@ type AuthState = {
 }
 
 type AuthStorage = {
-    accessToken: string
+    accessToken: string,
     refreshToken: string
 }
 
@@ -36,13 +36,8 @@ export default function AuthProvider({ children }: PropsWithChildren) {
         refreshToken: string
     }) {
         try {
-            await AsyncStorage.setItem(
-                AUTH_STORAGE_KEY,
-                JSON.stringify({
-                    accessToken: session.accessToken,
-                    refreshToken: session.refreshToken
-                })
-            )
+            const authState = { ccessToken: session.accessToken, refreshToken: session.refreshToken }
+            await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authState))
             await AsyncStorage.setItem(AUTH_USER_DATA_KEY, JSON.stringify(session.user))
         } catch (error) {
             console.log(error)
@@ -57,6 +52,13 @@ export default function AuthProvider({ children }: PropsWithChildren) {
             const parsedAuth = authState ? JSON.parse(authState) : null
             const parsedUser = userState ? JSON.parse(userState) : null
 
+            console.log('AUTH STATE:', {
+                tokens: parsedAuth,
+                accessToken: parsedAuth?.accessToken,
+                refreshToken: parsedAuth?.refreshToken,
+                user: parsedUser
+            })
+
             return { parsedAuth, parsedUser }
         } catch (error) {
             console.log(error)
@@ -67,6 +69,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     async function login(payload: LoginRequest) {
         try {
             const response = await authService.login(payload)
+            console.log('response: ', response)
             const { user, accessToken, refreshToken } = response.data
 
             await storeState({
@@ -90,7 +93,6 @@ export default function AuthProvider({ children }: PropsWithChildren) {
             setUser(null)
             setIsLoggedIn(false)
             await AsyncStorage.removeItem(AUTH_STORAGE_KEY)
-            await AsyncStorage.removeItem(AUTH_USER_DATA_KEY)
             router.replace('/login')
         } catch (error) {
             console.log(error)
@@ -102,14 +104,9 @@ export default function AuthProvider({ children }: PropsWithChildren) {
             try {
                 const storage = await getStoredData()
 
-                const hasSession = Boolean(
-                    storage?.parsedAuth?.accessToken && storage?.parsedUser
-                )
-
-                if (hasSession) {
+                if (storage) {
                     setUser(storage.parsedUser)
                     setIsLoggedIn(true)
-                    return
                 }
             } catch (error) {
                 console.log(error)
