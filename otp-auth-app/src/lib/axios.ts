@@ -1,4 +1,4 @@
-import { AUTH_STORAGE_KEY } from '@/contexts/authContext'
+import { AUTH_STORAGE_KEY } from '@/constants/storage'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { router } from 'expo-router'

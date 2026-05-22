@@ -1,3 +1,4 @@
+import { AUTH_STORAGE_KEY, AUTH_USER_DATA_KEY } from '@/constants/storage'
 import { authService, AuthUser, LoginRequest } from '@/service/authService'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
@@ -22,8 +23,6 @@ type StoredData = {
 }
 
 export const AuthContext = createContext<AuthState>({} as AuthState)
-export const AUTH_STORAGE_KEY = '@otp-auth-app:auth-state'
-export const AUTH_USER_DATA_KEY = '@otp-auth-app:user-state'
 
 export default function AuthProvider({ children }: PropsWithChildren) {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -52,12 +51,12 @@ export default function AuthProvider({ children }: PropsWithChildren) {
             const parsedAuth = authState ? JSON.parse(authState) : null
             const parsedUser = userState ? JSON.parse(userState) : null
 
-            console.log('AUTH STATE:', {
-                tokens: parsedAuth,
-                accessToken: parsedAuth?.accessToken,
-                refreshToken: parsedAuth?.refreshToken,
-                user: parsedUser
-            })
+            // console.log('AUTH STATE:', {
+            //     tokens: parsedAuth,
+            //     accessToken: parsedAuth?.accessToken,
+            //     refreshToken: parsedAuth?.refreshToken,
+            //     user: parsedUser
+            // })
 
             return { parsedAuth, parsedUser }
         } catch (error) {
