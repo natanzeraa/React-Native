@@ -22,6 +22,10 @@ export default function Layout() {
                                 name="login"
                                 options={{ animation: 'none' }}
                             />
+                            <Stack.Screen
+                                name="signup"
+                                options={{ animation: 'none' }}
+                            />
                         </Stack>
                     </SafeAreaView>
                 </SafeAreaProvider>
