@@ -1,6 +1,7 @@
 import { Button } from '@/components/base/button'
 import { Title } from '@/components/base/title'
 import useAuth from '@/hooks/useAuth'
+import { router } from 'expo-router'
 import { Eye, EyeOff } from 'lucide-react-native'
 import { useState } from 'react'
 import {
@@ -21,6 +22,7 @@ export default function Login() {
     const [password, setPassword] = useState('')
     const [visible, setVisible] = useState(false)
     const [loading, setLoading] = useState(false)
+
 
     const isDisabled =
         !email.trim() ||
@@ -128,6 +130,10 @@ export default function Login() {
                                 Entrar
                             </Text>
                         </Button>
+                        <Text style={styles.navText}>
+                            Não possui uma conta?
+                            <Text style={styles.navTextLink} onPress={() => router.push('/signup')}> Criar conta</Text>
+                        </Text>
                     </View>
                 </View>
             </ScrollView>
@@ -217,5 +223,12 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: '600',
         fontSize: 15
+    },
+    navText: {
+        textAlign: 'center'
+    },
+    navTextLink: {
+        fontWeight: 'bold',
+        color: '#7300ff'
     }
 })
