@@ -1,5 +1,5 @@
 import { AUTH_STORAGE_KEY, AUTH_USER_DATA_KEY } from '@/constants/storage'
-import { authService, AuthUser, LoginRequest } from '@/service/authService'
+import { authService, AuthUser, LoginRequest, SignUpRequest } from '@/service/authService'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
 import { createContext, PropsWithChildren, useEffect, useState } from 'react'
@@ -9,6 +9,7 @@ type AuthState = {
     isReady: boolean
     user: AuthUser | null
     login: (payload: LoginRequest) => Promise<void>
+    signup: (payload: SignUpRequest) => Promise<void>
     logout: () => Promise<void>
 }
 
@@ -87,6 +88,28 @@ export default function AuthProvider({ children }: PropsWithChildren) {
         }
     }
 
+    async function signup(payload: SignUpRequest) {
+        try {
+            const response = await authService.signup(payload)
+            console.log('signup.response: ', response)
+            // const { user, accessToken, refreshToken } = response.data
+
+            // await storeState({
+            //     user,
+            //     accessToken,
+            //     refreshToken
+            // })
+
+            // setUser(user)
+            // setIsLoggedIn(true)w
+
+            router.replace('/login')
+        } catch (error) {
+            console.log(error)
+            throw error
+        }
+    }
+
     async function logout() {
         try {
             setUser(null)
@@ -117,7 +140,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     }, [])
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, login, logout, isReady, user }} >
+        <AuthContext.Provider value={{ isLoggedIn, login, signup, logout, isReady, user }} >
             {children}
         </AuthContext.Provider>
     )

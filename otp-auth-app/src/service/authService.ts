@@ -6,6 +6,12 @@ export interface LoginRequest {
   token: string
 }
 
+export interface SignUpRequest {
+  name: string
+  email: string
+  password: string
+}
+
 export interface AuthUser {
   _id: string
   id: string
@@ -47,6 +53,9 @@ export interface EnableTOTPResponse {
 export const authService = {
   login: (payload: LoginRequest) =>
     api.post<AuthResponse>('/auth/login', payload),
+
+  signup: (payload: SignUpRequest) =>
+    api.post<AuthResponse>('/auth/signup', payload),
 
   enableTotp: (payload: EnableTOTPRequest) =>
     api.post<EnableTOTPResponse>('auth/2fa/enable', payload)
